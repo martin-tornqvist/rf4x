@@ -1,0 +1,7 @@
+[package]
+name = "rf4x"
+version = "0.0.1"
+authors = ["Martin Törnqvist m.tornq@gmail.com"]
+
+[dependencies]
+sdl2 = "0.10.0"
