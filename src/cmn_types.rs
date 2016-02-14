@@ -1,14 +1,13 @@
-
 pub struct P
 {
-    pub x : u32,
-    pub y : u32
+    pub x: i32,
+    pub y: i32,
 }
 
-impl P
+impl Default for P
 {
-    pub fn new(x : u32, y : u32) -> P
+    fn default() -> P
     {
-        P{x : x, y : y}
+        P { x: 0, y: 0 }
     }
 }

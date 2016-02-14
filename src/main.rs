@@ -1,45 +1,42 @@
-extern crate sdl2;
-use sdl2::event::Event;
-use sdl2::keyboard::Keycode;
+mod io;
+use io::*;
 
-mod rend;
 mod cmn_types;
-
 use cmn_types::*;
 
 fn main()
 {
     println!("main()");
 
-    let sdl = sdl2::init().unwrap();
+    io::init();
 
-    let d = P::new(800, 600);
+    loop {
+        io::clear_scr();
 
-    let mut window = rend::Window::new(&sdl, d);
+        let scr_dim = io::scr_dim();
 
-    window.draw();
-
-    let mut event_pump = sdl.event_pump().unwrap();
-
-    'running: loop
-    {
-        for event in event_pump.poll_iter()
-        {
-            match event
-            {
-                Event::Quit {..} |
-                Event::KeyDown
-                {
-                    keycode: Some(Keycode::Escape), ..
-                } =>
-                {
-                    break 'running
-                },
-                _ => {}
+        for x in 0..scr_dim.x {
+            for y in 0..scr_dim.y {
+                io::draw_char(P { x: x, y: y }, '.', CLR_GRN, CLR_BLK, FONT_NORM);
             }
         }
-        // The rest of the game loop goes here...
+
+        io::draw_text(P { x: 1, y: 1 },
+                      &format!("Some number: {}", 42),
+                      CLR_WHI,
+                      CLR_BLK,
+                      FONT_BOLD);
+
+        io::update_scr();
+
+        let inp = io::get_input();
+
+        if inp == 'q' as i32 {
+            break;
+        }
     }
+
+    io::cleanup();
 
     println!("main() [DONE]");
 }
