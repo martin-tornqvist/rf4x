@@ -7,6 +7,7 @@ mod cmn_types;
 use cmn_types::*;
 
 mod cursor;
+mod map;
 
 fn main()
 {
@@ -16,21 +17,44 @@ fn main()
 
     let mut cursor_p = P { ..P::default() };
 
+    let mut game_map = map::Map { ..map::Map::default() };
+
+    game_map.terrain[12 as usize][5 as usize] = map::TER_MNT;
+
     io::clear_scr();
 
     // ------------------------------------------------------------------------
     // Game loop
     // ------------------------------------------------------------------------
     loop {
-        let scr_dim = io::scr_dim();
+        // let scr_dim = io::scr_dim();
 
-        for x in 0..scr_dim.x {
-            for y in 0..scr_dim.y {
-                io::draw_char(&P { x: x, y: y },
-                              '.',
-                              io::CLR_GRN,
-                              io::CLR_BLK,
-                              io::FONT_NORM);
+        for x in 0..map::MAP_SIZE.x {
+            for y in 0..map::MAP_SIZE.y {
+
+                let mut ch = '\n';
+                let mut fg = io::CLR_WHI;
+                let mut bg = io::CLR_BLK;
+
+                let ter = game_map.terrain[x as usize][y as usize];
+
+                match ter {
+                    map::TER_GRD => {
+                        ch = '.';
+                        fg = io::CLR_YEL;
+                        bg = io::CLR_BLK;
+                    }
+
+                    map::TER_MNT => {
+                        ch = '^';
+                        fg = io::CLR_BLK;
+                        bg = io::CLR_WHI;
+                    }
+
+                    _ => {}
+                }
+
+                io::draw_char(&P { x: x, y: y }, ch, fg, bg, io::FONT_NORM);
             }
         }
 
