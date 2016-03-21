@@ -1,7 +1,27 @@
+pub enum Dir
+{
+    Right,
+    Left,
+    Down,
+    Up,
+    DownRight,
+    UpRight,
+    DownLeft,
+    UpLeft,
+}
+
 pub struct P
 {
     pub x: i32,
     pub y: i32,
+}
+
+impl P
+{
+    pub fn new(x: i32, y: i32) -> P
+    {
+        P { x: x, y: y }
+    }
 }
 
 impl Default for P
@@ -9,6 +29,17 @@ impl Default for P
     fn default() -> P
     {
         P { x: 0, y: 0 }
+    }
+}
+
+impl Clone for P
+{
+    fn clone(&self) -> P
+    {
+        P {
+            x: self.x,
+            y: self.y,
+        }
     }
 }
 
@@ -20,16 +51,11 @@ pub fn p_sum(p1: &P, p2: &P) -> P
     }
 }
 
-pub enum Dir
+pub fn p_offset(dir: Dir, p: &mut P)
 {
-    Right,
-    Left,
-    Down,
-    Up,
-    DownRight,
-    UpRight,
-    DownLeft,
-    UpLeft,
+    let d = to_offset(dir);
+
+    *p = p_sum(p, &d);
 }
 
 pub fn to_offset(dir: Dir) -> P

@@ -1,13 +1,16 @@
+// TODO: There is probably a better way to do this(?):
 #[cfg(unix)]
 mod ncurses_mode;
 #[cfg(unix)]
 use ncurses_mode::io;
 
 mod cmn_types;
-use cmn_types::*;
-
-mod cursor;
+mod mon;
 mod map;
+
+use cmn_types::*;
+use mon::*;
+use map::*;
 
 fn main()
 {
@@ -15,11 +18,15 @@ fn main()
 
     io::init();
 
-    let mut cursor_p = P { ..P::default() };
+    let mut player = Mon::new(&P::new(2, 4));
 
-    let mut game_map = map::Map { ..map::Map::default() };
+    let mut game_map = Map { ..Map::default() };
 
-    game_map.terrain[12 as usize][5 as usize] = map::TER_MNT;
+    for x in 1..MAP_W - 1 {
+        for y in 1..MAP_H - 1 {
+            game_map.ter[x][y] = Ter::Floor;
+        }
+    }
 
     io::clear_scr();
 
@@ -29,42 +36,52 @@ fn main()
     loop {
         // let scr_dim = io::scr_dim();
 
-        for x in 0..map::MAP_SIZE.x {
-            for y in 0..map::MAP_SIZE.y {
+        for x in 0..MAP_W {
+            for y in 0..MAP_H {
 
-                let mut ch = '\n';
-                let mut fg = io::CLR_WHI;
-                let mut bg = io::CLR_BLK;
+                let ch;
+                let fg;
+                let bg;
 
-                let ter = game_map.terrain[x as usize][y as usize];
+                let ter = game_map.ter[x][y];
 
                 match ter {
-                    map::TER_GRD => {
+                    Ter::Floor => {
                         ch = '.';
-                        fg = io::CLR_YEL;
-                        bg = io::CLR_BLK;
+                        fg = io::Clr::White;
+                        bg = io::Clr::Black;
                     }
 
-                    map::TER_MNT => {
-                        ch = '^';
-                        fg = io::CLR_BLK;
-                        bg = io::CLR_WHI;
+                    Ter::Wall => {
+                        ch = '#';
+                        fg = io::Clr::White;
+                        bg = io::Clr::Black;
                     }
-
-                    _ => {}
                 }
 
-                io::draw_char(&P { x: x, y: y }, ch, fg, bg, io::FONT_NORM);
+                io::draw_char(&P {
+                                  x: x as i32,
+                                  y: y as i32,
+                              },
+                              ch,
+                              fg,
+                              bg,
+                              io::FontWgt::Normal);
             }
         }
 
-        io::draw_text(&P { x: 1, y: 1 },
-                      &format!("Some number: {}", 42),
-                      io::CLR_WHI,
-                      io::CLR_BLK,
-                      io::FONT_BOLD);
+        // io::draw_text(&P { x: 1, y: 1 },
+        // &format!("Some number: {}", 42),
+        // io::Clr::White,
+        // io::Clr::Black,
+        // io::FONT_BOLD);
+        //
 
-        io::draw_char(&cursor_p, 'X', io::CLR_GRN, io::CLR_BLK, true);
+        io::draw_char(&player.p(),
+                      '@',
+                      io::Clr::White,
+                      io::Clr::Black,
+                      io::FontWgt::Bold);
 
         io::update_scr();
 
@@ -76,35 +93,35 @@ fn main()
             }
 
             ('6', 0) | ('\n', io::KEY_RIGHT) => {
-                cursor::offset(Dir::Right, &mut cursor_p);
+                player.mv(Dir::Right);
             }
 
             ('4', 0) | ('\n', io::KEY_LEFT) => {
-                cursor::offset(Dir::Left, &mut cursor_p);
+                player.mv(Dir::Left);
             }
 
             ('2', 0) | ('\n', io::KEY_DOWN) => {
-                cursor::offset(Dir::Down, &mut cursor_p);
+                player.mv(Dir::Down);
             }
 
             ('8', 0) | ('\n', io::KEY_UP) => {
-                cursor::offset(Dir::Up, &mut cursor_p);
+                player.mv(Dir::Up);
             }
 
             ('3', 0) => {
-                cursor::offset(Dir::DownRight, &mut cursor_p);
+                player.mv(Dir::DownRight);
             }
 
             ('9', 0) => {
-                cursor::offset(Dir::UpRight, &mut cursor_p);
+                player.mv(Dir::UpRight);
             }
 
             ('1', 0) => {
-                cursor::offset(Dir::DownLeft, &mut cursor_p);
+                player.mv(Dir::DownLeft);
             }
 
             ('7', 0) => {
-                cursor::offset(Dir::UpLeft, &mut cursor_p);
+                player.mv(Dir::UpLeft);
             }
 
             _ => {}

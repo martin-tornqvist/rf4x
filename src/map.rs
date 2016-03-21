@@ -1,19 +1,23 @@
-use cmn_types::*;
+// TODO: Map should be bigger than this, and a viewport should be used
+pub const MAP_W: usize = 80;
+pub const MAP_H: usize = 20;
 
-pub const MAP_SIZE: P = P { x: 16, y: 8 };
-
-pub const TER_GRD : i32 = 0;
-pub const TER_MNT : i32 = 1;
+#[derive(Clone, Copy)]
+pub enum Ter
+{
+    Floor,
+    Wall,
+}
 
 pub struct Map
 {
-    pub terrain: [[i32; MAP_SIZE.y as usize]; MAP_SIZE.x as usize],
+    pub ter: [[Ter; MAP_H]; MAP_W],
 }
 
 impl Default for Map
 {
     fn default() -> Map
     {
-        Map { terrain: [[TER_GRD; MAP_SIZE.y as usize]; MAP_SIZE.x as usize] }
+        Map { ter: [[Ter::Wall; MAP_H]; MAP_W] }
     }
 }

@@ -5,19 +5,24 @@ use cmn_types::*;
 // -----------------------------------------------------------------------------
 // Colors and font
 // -----------------------------------------------------------------------------
-pub type Clr = i32;
+pub enum Clr
+{
+    Black = ncurses::COLOR_BLACK as isize,
+    Red = ncurses::COLOR_RED as isize,
+    Green = ncurses::COLOR_GREEN as isize,
+    Yellow = ncurses::COLOR_YELLOW as isize,
+    Blue = ncurses::COLOR_BLUE as isize,
+    Magenta = ncurses::COLOR_MAGENTA as isize,
+    Cyan = ncurses::COLOR_CYAN as isize,
+    White = ncurses::COLOR_WHITE as isize,
+}
 
-pub const CLR_BLK: i32 = ncurses::COLOR_BLACK as i32;
-pub const CLR_RED: i32 = ncurses::COLOR_RED as i32;
-pub const CLR_GRN: i32 = ncurses::COLOR_GREEN as i32;
-pub const CLR_YEL: i32 = ncurses::COLOR_YELLOW as i32;
-pub const CLR_BLU: i32 = ncurses::COLOR_BLUE as i32;
-pub const CLR_MAG: i32 = ncurses::COLOR_MAGENTA as i32;
-pub const CLR_CYA: i32 = ncurses::COLOR_CYAN as i32;
-pub const CLR_WHI: i32 = ncurses::COLOR_WHITE as i32;
-
-pub const FONT_NORM: bool = false;
-pub const FONT_BOLD: bool = true;
+#[derive(Clone, Copy)]
+pub enum FontWgt
+{
+    Normal = 0,
+    Bold,
+}
 
 // -----------------------------------------------------------------------------
 // Keyboard key codes
@@ -120,38 +125,34 @@ pub fn scr_dim() -> P
     p
 }
 
-pub fn draw_char(p: &P, c: char, fg: Clr, bg: Clr, is_bold: bool)
+pub fn draw_char(p: &P, c: char, fg: Clr, bg: Clr, bold: FontWgt)
 {
     set_clr_attr(fg, bg);
 
-    if is_bold {
+    if bold as i32 == FontWgt::Bold as i32 {
         ncurses::attron(ncurses::A_BOLD());
     }
 
     ncurses::mvaddch(p.y, p.x, c as u32);
 
-    if is_bold {
+    if bold as i32 == FontWgt::Bold as i32 {
         ncurses::attroff(ncurses::A_BOLD());
     }
-
-    // ncurses::attroff(ncurses::COLOR_PAIR(1));
 }
 
-pub fn draw_text(p: &P, text: &str, fg: Clr, bg: Clr, is_bold: bool)
+pub fn draw_text(p: &P, text: &str, fg: Clr, bg: Clr, bold: FontWgt)
 {
     set_clr_attr(fg, bg);
 
-    if is_bold {
+    if bold as i32 == FontWgt::Bold as i32 {
         ncurses::attron(ncurses::A_BOLD());
     }
 
     ncurses::mvprintw(p.y, p.x, text);
 
-    if is_bold {
+    if bold as i32 == FontWgt::Bold as i32 {
         ncurses::attroff(ncurses::A_BOLD());
     }
-
-    // ncurses::attroff(ncurses::COLOR_PAIR(1));
 }
 
 pub fn get_input() -> (char, i32)
@@ -175,7 +176,7 @@ pub fn get_input() -> (char, i32)
 // -----------------------------------------------------------------------------
 fn set_clr_attr(fg: Clr, bg: Clr)
 {
-    let idx: i16 = (fg * ncurses::COLORS + bg) as i16;
+    let idx = (fg as i32 * ncurses::COLORS + bg as i32) as i16;
 
     let ncurses_clr_pair = ncurses::COLOR_PAIR(idx);
 
