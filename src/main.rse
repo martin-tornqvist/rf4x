@@ -14,8 +14,6 @@ use mon::*;
 use map::*;
 use render::*;
 
-use std::cmp;
-
 fn main()
 {
     println!("main()");
@@ -23,12 +21,6 @@ fn main()
     io::init();
 
     let mut game_map = Map::new();
-
-    for x in 1..MAP_W - 1 {
-        if x % 2 == 0 {
-            game_map.ter[x][0] = Ter::Floor;
-        }
-    }
 
     for x in 1..MAP_W - 1 {
         for y in 1..MAP_H - 1 {
@@ -42,7 +34,7 @@ fn main()
 
     game_map.monsters.push(player);
 
-    let mut vp = R::new();
+    let player_idx = 0;
 
     io::clear_scr();
 
@@ -50,33 +42,30 @@ fn main()
     // Game loop
     // ------------------------------------------------------------------------
     loop {
-        let scr_dim = io::scr_dim();
+        // let scr_dim = io::scr_dim();
 
-        if scr_dim.x < 80 || scr_dim.y < 24 {
-            io::clear_scr();
+        let player_p = *game_map.monsters[player_idx].p();
 
-            io::draw_text(&P { x: 0, y: 0 },
-                          &format!("Game window too small!"),
-                          io::Clr::Red,
-                          io::Clr::Black,
-                          io::FontWgt::Bold);
+        let vp_dim = P::new_xy(80, 22);
 
-        } else {
-            let mut map_window_dim = scr_dim;
+        let mut vp = R::new();
 
-            map_window_dim.x = cmp::min(map_window_dim.x, (MAP_W as i32));
-            map_window_dim.y = cmp::min(map_window_dim.y, (MAP_H as i32));
+        let trigger_dist = 2;
 
-            let player_p = *game_map.monsters[0].p();
+        vp_update(&player_p, &vp_dim /* &scr_dim */, trigger_dist, &mut vp);
 
-            let vp_trigger_dist = 3;
+        // R::new(&P::new(), &scr_dim);
 
-            vp_update(&player_p, &map_window_dim, vp_trigger_dist, &mut vp);
+        draw_map(&game_map, &vp);
 
-            draw_map(&game_map, &vp);
-        }
+        // io::draw_text(&P { x: 1, y: 1 },
+        // &format!("Some number: {}", 42),
+        // io::Clr::White,
+        // io::Clr::Black,
+        // io::FONT_BOLD);
+        //
 
-        let player = &mut game_map.monsters[0];
+        let player = &mut game_map.monsters[player_idx];
 
         let inp = io::get_input();
 
@@ -118,11 +107,6 @@ fn main()
             }
 
             _ => {}
-        }
-
-        // If screen has been resized, trigger a viewport update next iteration
-        if io::scr_dim() != scr_dim {
-            vp = R::new();
         }
     }
 

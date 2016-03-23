@@ -1,6 +1,6 @@
 extern crate ncurses;
 
-use cmn_types::*;
+use utils::*;
 
 // -----------------------------------------------------------------------------
 // Colors and font
